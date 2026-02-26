@@ -1,0 +1,62 @@
+---
+title: "a02"
+Author: Denis Cruz
+format:
+  html:
+    toc: true
+    toc-depth: 3
+execute:
+  warning: false
+  message: false
+---
+
+# Introduction
+
+This Quarto document follows the **Section 5.7 practice exercise** from coreR *Session 05 (Literate Analysis with Quarto)*: building a simple **prose + code** analysis using real seawater chemistry data (`BGchem2008data.csv`).\
+Source: <https://learning.nceas.ucsb.edu/2024-10-coreR/session_05.html>
+
+## About the data
+
+The chlorophyll extraction data used here is `chlorophyll_extraction.csv` This data measures the chlorophyll of truncatula plants after 3 weeks of being inoculated with varying mutated strains of S.Meliloti, a symbiotic nitrogen fixing bacteria in legume plants. - Date downloaded: February 26, 2026 - Download source: drive
+
+The goal here is to make the data tidy, as we have learned in class
+
+## Setup
+
+Best practice: put all `library()` calls in one chunk near the top so collaborators can see what packages are required.
+
+```{r}
+library(here)
+library(readr)
+```
+
+# Read in the data
+
+Quarto runs R in the same way as a script: objects only exist after the chunks that create them have been run.
+
+Using `here()` is a convenient way to build paths relative to your project root (e.g., your `.qmd` might live in `scripts/` while data lives in `data/`).
+
+```{r}
+chlo_ex <- read_csv(here::here("assignments","data","raw", "chlorophyll_extraction.csv"))
+```
+
+(Optional) Quick peek at the data:
+
+```{r}
+# Uncomment if you want more inspection output
+ names(chlo_ex)
+# str()
+# head()
+```
+
+# Analysis
+
+My data is not tidy, I have many repeated variables, but I do have primary keys and some foreign keys.
+
+Primary key - "Plant" number this is a variable with unique value as each plant is numbered with a distinct number
+
+Foreign keys - "Lich chlA ChlB and Arn chlA chlB" I would say my chlorophyll calculations are foreign keys because link to other tables, to find averages and to observance columns
+
+# Conclusion
+
+My data will require quite a few fixes, starting with variable repeats and perhaps making some joins of the tables pre and post dilution, which some offer the same information, and dilution is only preformed when the observance levels are too high making the sprectrometer reading not as reliable.
