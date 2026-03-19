@@ -60,3 +60,5 @@ Foreign keys - "Lich chlA ChlB and Arn chlA chlB" I would say my chlorophyll cal
 # Conclusion
 
 My data will require quite a few fixes, starting with variable repeats and perhaps making some joins of the tables pre and post dilution, which some offer the same information, and dilution is only preformed when the observance levels are too high making the sprectrometer reading not as reliable.
+
+yml fix
