@@ -1,6 +1,14 @@
 ---
 title: "a04"
-editor: visual
+author: "Denis Cruz"
+date: "2026-03-26"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+execute:
+  warning: false
+  message: false
 ---
 
 ## Quarto
@@ -12,19 +20,122 @@ Quarto enables you to weave together content and executable code into a finished
 When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
 
 ```{r}
-1 + 1
+# Intro: in this assignment we practice join and wrangling using bird survey data.
 ```
 
-You can add options to executable code like this
-
-```{r}
-#| echo: false
-2 * 2
-```
-
-The `echo: false` option disables the printing of code (only output is displayed).
 
 ```{r}
 help("lubridate")
+```
+
+```{r}
+#loading packages 
+library(readr)
+library(dplyr)
+library(here)
+library(lubridate)
+```
+
+```{r} 
+# loading data
+bird_observations <- read_csv(here::here("assignments/data/raw/52_pp52_birds_1.csv"))
+surveys <- read_csv(here::here("assignments/data/raw/52_pp52_surveys_1.csv"))
+sites <- read_csv(here::here("assignments/data/raw/52_pp52_sites_1.csv"))
+taxalist <- read_csv(here::here("assignments/data/raw/52_pp52_taxalist_1.csv"))
+```
+
+```{r} 
+# question 2, looking at data
+dim(bird_observations)
+head(bird_observations)
+glimpse(bird_observations)
+summary(bird_observations)
+names(bird_observations)
+unique(bird_observations$species_id)
+```
+
+```{r}
+#question 3 create subset
+birds_subset <- bird_observations %>% 
+  filter(species_id %in% c("BHCO", "RWBL")) %>% 
+  filter(site_id %in% c("LI-W", "NU-C"))
+```
+
+```{r}
+# merge and join practice
+birds_left <- birds_subset %>% 
+  left_join(y = sites, by = "site_id")
+
+birds_inner <- birds_subset %>% 
+  inner_join(y = taxalist, by = "species_id")
+
+birds_inner_left <- birds_subset %>% 
+  left_join(y = taxalist, by = "species_id")
+
+bird_observations <- bird_observations %>% 
+  rename(bird_obs_notes = notes)
+
+bird_obs_subset <- bird_observations %>% 
+  full_join(y = taxalist, by = "species_id") %>% 
+  full_join(y = sites, by = "site_id") %>% 
+  full_join(y = surveys, by = c("site_id", "survey_id")) %>% 
+  select(survey_date, common_name, park_name, bird_count, observer)
+```
+
+```{r}
+unique(bird_obs_subset$observer)
+#7 unique names
+
+bird_obs_subset <- bird_obs_subset %>% 
+  mutate(
+    observer = if_else(
+      condition = observer == "Josh Burns",
+      true = "J. Burns",
+      false = observer
+    )
+  )
+
+unique(bird_obs_subset$observer)
+```
+```{r}
+# ao4 Assignment start 
+#question 1
+
+bird_obs_subset <- bird_obs_subset %>% 
+  mutate(
+    survey_month = month(survey_date),
+    survey_month = factor(survey_month)
+  )
+```
+
+```{r}
+# question 2
+
+bird_obs_subset <- bird_obs_subset %>% 
+  mutate(
+    survey_month = month(survey_date),
+    survey_month = factor(survey_month)
+  ) %>% 
+  relocate(survey_month, .after = survey_date)
+```
+
+```{r}
+#question 3
+bird_obs_subset_filtered <- bird_obs_subset %>% 
+  filter(park_name %in% c("Lindo", "Orme", "Palomino", "Sonrisa"))
+```
+
+```{r}
+# question 4
+birds_by_park_month <- bird_obs_subset_filtered %>% 
+  group_by(park_name, survey_month) %>% 
+  summarize(total_birds = sum(bird_count, na.rm = TRUE), .groups = "drop")
+
+birds_by_park_month
+```
+
+```{r}
+## Summary: yes I think the data we created is informative, it is easier to see as it reduced many individual observations into a simpler table. Maybe to imprve the data we can check for values more carfeully which would help decided what joins or merges are better 
+
 ```
 
