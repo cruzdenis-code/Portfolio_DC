@@ -135,7 +135,7 @@ birds_by_park_month
 ```
 
 ```{r}
-## Summary: yes I think the data we created is informative, it is easier to see as it reduced many individual observations into a simpler table. Maybe to imprve the data we can check for values more carfeully which would help decided what joins or merges are better 
+## Summary: yes I think the data we created is informative, it is easier to see as it reduced many individual observations into a simpler table. Maybe to imprve the data we can check for values more carfeully which would help decided what joins or merges are better.
 
 ```
 
