@@ -7,3 +7,21 @@ listing:
 ---
 
 Welcome, I'm Denis 
+
+---
+title: "Portfolio"
+---
+
+## Course Lessons
+
+- Introduction to Literate Analysis Using Quarto
+- Tidy Data
+- Cleaning and Wrangling Data
+- Data Visualization
+
+## Assignments
+
+## Assignments
+
+- [Cleaning and Data Wrangling](assignments/a04.html)
+- [Data Visualization](assignments/a05.html)
