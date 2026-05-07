@@ -6,7 +6,4 @@ listing:
   fields: [title, date]
 ---
 
-Welcome!  
-This is my portfolio for learning **R, data analysis, GitHub, and Quarto**.
-
-## Assignments
+Welcome, I'm Denis 
