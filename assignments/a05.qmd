@@ -1,0 +1,162 @@
+---
+title: "Assignment 5"
+author: "Denis Cruz"
+date: "2026-04-06"
+format:
+  html:
+    toc: true
+execute:
+  warning: false
+  message: false
+---
+
+## Introduction
+
+In this assignment, we analyz socio ecological monitoring data from the Sacramento San Joaquin Delta. The goal was to visualize visitor activity across restoration locations and map the spatial distribution, these visualizations help us visualize human activity and geographic patterns across the Delta ecosystem
+
+```{r}
+# loading in necessary packages
+library(readr)
+library(dplyr)
+library(tidyr)
+library(forcats) # makes working with factors easier
+library(ggplot2)
+library(leaflet) # interactive maps
+library(DT) # interactive tables
+library(scales) # scale functions for visualization
+library(janitor) # expedite cleaning and exploring data
+library(viridis) # colorblind friendly color palette
+
+```
+
+```{r}
+# read in data from the data directory after manually downloading data 
+delta_visits_raw <- read_csv(here::here("assignments/data/raw/Socioecological_monitoring_data.csv"))
+```
+
+```{r}
+#looking into raw data 
+## Check out column names
+
+colnames(delta_visits_raw)
+
+## Peak at each column and class
+glimpse(delta_visits_raw)
+
+## From when to when
+range(delta_visits_raw$Date)
+
+## Which time of day?
+unique(delta_visits_raw$Time_of_Day)
+```
+
+```{r}
+# generalizing names 
+delta_visits <- delta_visits_raw %>% 
+    janitor::clean_names()
+colnames(delta_visits)
+
+```
+
+```{r}
+visits_long <- delta_visits %>% 
+    pivot_longer(cols = c(sm_boat, med_boat, lrg_boat, bank_angler, scientist, cars),
+                 names_to = "visitor_type",
+                 values_to = "quantity") %>%
+    rename(restore_loc = eco_restore_approximate_location) %>% 
+    select(-notes)
+
+## Checking the outcome
+head(visits_long)
+
+daily_visits_loc <- visits_long %>%
+    group_by(restore_loc, date, visitor_type) %>% 
+    summarise(daily_visits = sum(quantity))
+    
+head(daily_visits_loc)
+```
+
+```{r}
+my_theme <- theme_bw(base_size = 16) +
+    theme(legend.position = "bottom",
+          axis.ticks.y = element_blank())
+
+```
+
+```{r}
+daily_visits_totals <- daily_visits_loc %>% 
+    group_by(restore_loc) %>%
+    mutate(n = sum(daily_visits)) %>% 
+    ungroup() %>%
+    mutate(restore_loc = fct_reorder(restore_loc, n))
+
+head(daily_visits_totals)
+```
+
+```{r}
+levels(daily_visits_totals$restore_loc) ### not alphabetical any more!
+```
+
+```{r}
+## Graph with comments 
+
+daily_visits_totals <- daily_visits_loc %>% 
+    group_by(restore_loc) %>% # this groups by resoration locations
+    mutate(n = sum(daily_visits)) %>% #adds total visits per location and adds a column
+    ungroup() %>% #no grouping ? 
+    mutate(restore_loc = fct_reorder(restore_loc, desc(n))) #re order location by visit most to least
+
+ggplot(data = daily_visits_totals,
+       aes(x = daily_visits, y = restore_loc,
+           fill = visitor_type)) +
+    geom_col() +
+    labs(x = "Number of Visits", # X axis
+         y = "Restoration Location", #y axis
+         fill = "Type of Visitor", #color by visit type
+         title = "Total Number of Visits to Delta Restoration Areas by visitor type", #title will appear at the top
+         subtitle = "Sum of all visits during study period") + #subtitle
+    scale_x_continuous(breaks = seq(0,120, 20), expand = c(0,0)) +
+    my_theme #x axis numner 0 to 120 with 20 intervals #expand removes extra space in graph #my_theme adds the custom theme we made before
+```
+
+```{r}
+# DT interactive tables 
+locations <- visits_long %>%
+    distinct(restore_loc, .keep_all = TRUE) %>%
+    select(restore_loc, latitude, longitude)
+
+head(locations)
+```
+
+```{r}
+datatable(locations)
+```
+
+```{r}
+## interactive map with comments
+
+leaflet(locations) %>% #open map with thelocation data
+    addProviderTiles(providers$Esri.WorldImagery) %>% #adds satellite imaging
+    addProviderTiles(providers$CartoDB.PositronOnlyLabels) %>% #adds lables location names
+    addCircleMarkers(
+        lng = ~ longitude, #longitude for marker
+        lat = ~ latitude, #latitude for marker
+        popup = ~ restore_loc, # shows location name when clicked
+        radius = 5, #marker size
+        # set fill properties
+        fillColor = "salmon", #marker color
+        fillOpacity = 1, #opacity 
+        # set stroke properties
+        stroke = TRUE, #allows border around marker
+        weight = 0.5, #border thickeness
+        color = "white", #white border
+        opacity = 1) #opacity 
+```
+
+## Discussion
+
+The bar plot shows how the total number of visitors varies across locations. We can see that some sites receive higher levels of activity than others, indicating that human use is not distributed evenly across the Delta. The stacked bars are helful because they show that different visitor types contribute differently at each location. For example, some sites seem to have more boat activity, while others have more cars or bank anglers, suggesting differences in how each site is accessed and used, which may be better explained looking at are map. \
+\
+The map provides important context for the patterns we see in the bar plot by showing where each restoration location is in the Delta. The sites are spread across a wide geographic area, which helps see reason of visitation type. for example locations that are more accessible or closer to people may receive more visitors, while more remote sites may see less activity. Which is where i'd be going. \
+\
+Together, the plot and the map complement each other by combining quantitative patterns with location context. The plot summarizes how visitation differs across sites and visitor types and the map helps explain these differences by showing where the sites are located.
