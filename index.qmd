@@ -21,7 +21,5 @@ title: "Portfolio"
 
 ## Assignments
 
-## Assignments
-
 - [Cleaning and Data Wrangling](assignments/a04.html)
 - [Data Visualization](assignments/a05.html)
